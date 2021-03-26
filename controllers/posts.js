@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 import PostMessage from '../models/postMessage.js';
 
@@ -5,9 +6,6 @@ import PostMessage from '../models/postMessage.js';
 export const getUsers= async (req, res)=>{
     try {
         const postMessages = await PostMessage.find();
-
-        console.log(postMessages);
-
         res.status(200).json(postMessages);
 
     } catch (error) {
@@ -17,15 +15,16 @@ export const getUsers= async (req, res)=>{
 
 export const registerUser= async (req, res) => {
     const user=req.body;
-
+    
     const newUser = new PostMessage(user);
 
    try {
-       await newUser.save();
-
-       res.status(201).json(newUser); 
+       
+       const result= await newUser.save();
+       const token = jwt.sign({ userName: result.userName, id: result._id}, 'test',);
+       res.status(201).json(result); 
    } catch (error) {
-       res.status(409).json({message: error.message});
+       res.status(500).json({message: "Something went wrong. User is not created"});
    }
 }
 
